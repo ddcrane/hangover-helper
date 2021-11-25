@@ -1,80 +1,83 @@
 import React, { useState } from 'react';
-import { useMutation } from '@apollo/react-hooks';
-import { LOGIN_USER } from '../../utils/mutations';
+import { validateEmail } from '../../utils/helpers';
 
-import Auth from '../../utils/auth';
-
-const Login = props => {
-  const [formState, setFormState] = useState({ email: '', password: '' });
-  const [login, { error }] = useMutation(LOGIN_USER);
-
-  // update state based on form input changes
-  const handleChange = event => {
-    const { name, value } = event.target;
-
-    setFormState({
-      ...formState,
-      [name]: value
-    });
-  };
-
-  // submit form
-  const handleFormSubmit = async event => {
-    event.preventDefault();
-
-    try {
-      const { data } = await login({
-        variables: { ...formState }
-      });
-
-      Auth.login(data.login.token);
-    } catch (e) {
-      console.error(e);
-    }
-
-    // clear form values
-    setFormState({
+function Login() {
+    const [formState, setFormState] = useState({
+      name: '',
       email: '',
-      password: ''
     });
-  };
-
-  return (
-    <main className="flex-row justify-center mb-4">
-      <div className="col-12 col-md-6">
-        <div className="card">
-          <h4 className="card-header">Login</h4>
-          <div className="card-body">
-            <form onSubmit={handleFormSubmit}>
-              <input
-                className="form-input"
-                placeholder="Your email"
-                name="email"
-                type="email"
-                id="email"
-                value={formState.email}
-                onChange={handleChange}
-              />
-              <input
-                className="form-input"
-                placeholder="******"
-                name="password"
-                type="password"
-                id="password"
-                value={formState.password}
-                onChange={handleChange}
-              />
-              <button className="btn d-block w-100" type="submit">
-                Submit
-              </button>
-            </form>
-
-            {error && <div>Login failed</div>}
+  
+    const [errorMessage, setErrorMessage] = useState('');
+    const { name, email } = formState;
+  
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      if (!errorMessage) {
+        console.log('Submit Form', formState);
+      }
+    };
+  
+    const handleChange = (e) => {
+      if (e.target.name === 'email') {
+        const isValid = validateEmail(e.target.value);
+        if (!isValid) {
+          setErrorMessage('Your email is invalid.');
+        } else {
+          setErrorMessage('');
+        }
+      } else {
+        if (!e.target.value.length) {
+          setErrorMessage(`${e.target.name} is required.`);
+        } else {
+          setErrorMessage('');
+        }
+      }
+      if (!errorMessage) {
+        setFormState({ ...formState, [e.target.name]: e.target.value });
+        console.log('Handle Form', formState);
+      }
+    };
+  
+    return (
+      <section>
+        <form id="contact-form" onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="name">Username:</label>
+            <input
+              type="text"
+              name="name"
+              defaultValue={name}
+              onBlur={handleChange}
+            />
           </div>
-        </div>
-      </div>
-    </main>
-  );
-};
+          <div>
+            <label htmlFor="email">Email address:</label>
+            <input
+              type="email"
+              name="email"
+              defaultValue={email}
+              onBlur={handleChange}
+            />
+          </div>
+          <div>
+          <label htmlFor="password">Password:</label>
+            <input
+              type="password"
+              name="password"
+              defaultValue={email}
+              onBlur={handleChange}
+            />
+          </div>
+          {errorMessage && (
+            <div>
+              <p className="error-text">{errorMessage}</p>
+            </div>
+          )}
+          <button type="submit">Submit</button>
+        </form>
+      </section>
+    );
+  }
+  
 
 export default Login;

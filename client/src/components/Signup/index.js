@@ -1,113 +1,83 @@
-import React, { useState } from "react";
-import { useMutation } from "@apollo/react-hooks";
-import { ADD_USER } from "../../utils/mutations";
+import React, { useState } from 'react';
+import { validateEmail } from '../../utils/helpers';
 
-import Auth from "../../utils/auth";
-
-export default function Signup (props) {
-  // const [formState, setFormState] = useState({
-  //   username: "",
-  //   email: "",
-  //   password: "",
-  // });
-  // const [addUser, { error }] = useMutation(ADD_USER);
-
-  // // update state based on form input changes
-  // const handleChange = (event) => {
-  //   const { name, value } = event.target;
-
-  //   setFormState({
-  //     ...formState,
-  //     [name]: value,
-  //   });
-  // };
-
-  // // submit form
-  // const handleFormSubmit = async (event) => {
-  //   event.preventDefault();
-
-  //   try {
-  //     const { data } = await addUser({
-  //       variables: {
-  //         username: formState.username,
-  //         email: formState.email,
-  //         password: formState.password,
-  //       },
-  //     });
-
-  //     Auth.login(data.addUser.token);
-  //   } catch (e) {
-  //     console.error(e);
-  //   }
-  // };
-
-  const [formState, setFormState] = useState({ email: "", password: "" });
-  const [addUser] = useMutation(ADD_USER);
-
-  const handleFormSubmit = async (event) => {
-    event.preventDefault();
-    const mutationResponse = await addUser({
-      variables: {
-        username: formState.username,
-        email: formState.email,
-        password: formState.password,
-      },
+function Signup() {
+    const [formState, setFormState] = useState({
+      name: '',
+      email: '',
     });
-    const token = mutationResponse.data.addUser.token;
-    Auth.login(token);
-  };
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormState({
-      ...formState,
-      [name]: value,
-    });
-  };
-
-  return (
-    <>
-      <main className="flex-row justify-center mb-4">
-        <div className="col-12 col-md-6">
-          <div className="card">
-            <h4 className="card-header">Sign Up</h4>
-            <div className="card-body">
-              <form onSubmit={handleFormSubmit}>
-                <input
-                  className="form-input"
-                  placeholder="Your username"
-                  name="username"
-                  type="text"
-                  id="username"
-                  onChange={handleChange}
-                  required
-                />
-                <input
-                  className="form-input"
-                  placeholder="Your email"
-                  name="email"
-                  type="email"
-                  id="email"
-                  // value={formState.email}
-                  onChange={handleChange}
-                />
-                <input
-                  className="form-input"
-                  placeholder="******"
-                  name="password"
-                  type="password"
-                  id="password"
-                  // value={formState.password}
-                  onChange={handleChange}
-                />
-                <button className="btn d-block w-100" type="submit">
-                  Submit
-                </button>
-              </form>
-            </div>
+  
+    const [errorMessage, setErrorMessage] = useState('');
+    const { name, email } = formState;
+  
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      if (!errorMessage) {
+        console.log('Submit Form', formState);
+      }
+    };
+  
+    const handleChange = (e) => {
+      if (e.target.name === 'email') {
+        const isValid = validateEmail(e.target.value);
+        if (!isValid) {
+          setErrorMessage('Your email is invalid.');
+        } else {
+          setErrorMessage('');
+        }
+      } else {
+        if (!e.target.value.length) {
+          setErrorMessage(`${e.target.name} is required.`);
+        } else {
+          setErrorMessage('');
+        }
+      }
+      if (!errorMessage) {
+        setFormState({ ...formState, [e.target.name]: e.target.value });
+        console.log('Handle Form', formState);
+      }
+    };
+  
+    return (
+      <section>
+        <form id="contact-form" onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="name">Username:</label>
+            <input
+              type="text"
+              name="name"
+              defaultValue={name}
+              onBlur={handleChange}
+            />
           </div>
-        </div>
-      </main>
-    </>
-  );
-};
+          <div>
+            <label htmlFor="email">Email address:</label>
+            <input
+              type="email"
+              name="email"
+              defaultValue={email}
+              onBlur={handleChange}
+            />
+          </div>
+          <div>
+          <label htmlFor="password">Password:</label>
+            <input
+              type="password"
+              name="password"
+              defaultValue={email}
+              onBlur={handleChange}
+            />
+          </div>
+          {errorMessage && (
+            <div>
+              <p className="error-text">{errorMessage}</p>
+            </div>
+          )}
+          <button type="submit">Submit</button>
+        </form>
+      </section>
+    );
+  }
+  
+
+export default Signup;
